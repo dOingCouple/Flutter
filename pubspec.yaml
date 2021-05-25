@@ -43,6 +43,7 @@ dependencies:
   json_serializable: ^3.5.0
   flutter_svg: ^0.19.3
   emojis: ^0.8.1
+  image_picker: ^0.6.7+22
 
 dev_dependencies:
   flutter_test:

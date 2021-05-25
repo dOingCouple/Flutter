@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:doing_app/screen/sign/screen/sign_up_succes.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:image_picker/image_picker.dart';
 
 class SignUpPage extends StatefulWidget {
   @override
@@ -14,11 +18,44 @@ class _SignUpPageState extends State<SignUpPage> {
   bool checkTermsAndConditions = false;
   bool checkCollectPersonalInformation = false;
   bool checkMarketingUtilization = false;
+  List<bool> checkList = [];
+  String btnCheckBoxSelect =
+      "assets/svgs/buttons_toggle_checkbox_btn_checkbox_selected.svg";
+  String btnCheckBoxUnSelect =
+      "assets/svgs/buttons_toggle_checkbox_btn_checkbox_unselected.svg";
+  String btnCheckSelect =
+      "assets/svgs/buttons_toggle_check_btn_check_selected.svg";
+  String btnCheckUnSelect =
+      "assets/svgs/buttons_toggle_check_btn_check_unselected.svg";
+  File _image;
+
+  Future getImage() async {
+    final pickedFile =
+        await ImagePicker().getImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    checkList.add(false);
+    checkList.add(false);
+    checkList.add(false);
+    checkList.add(false);
+    checkList.add(false);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey,
+      backgroundColor: Color(0xfff7f7f8),
 //      appBar: AppBar(),
       body: Container(
         child: SingleChildScrollView(child: test()),
@@ -31,25 +68,43 @@ class _SignUpPageState extends State<SignUpPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          height: 130,
+          height: 133,
         ),
         Stack(
-//        alignment = AlignmentDirectional.topStart,
           alignment: AlignmentDirectional.center,
           children: [
             Center(
-//              child: Image.asset(""),
-              child: Container(
-                width: 80,
-                height: 80,
-                color: Colors.black,
-              ),
+              child: _image == null
+                  ? SvgPicture.asset(
+                      "assets/svgs/img_profile_large_default.svg")
+                  : ClipRRect(
+                      child: Container(
+                        height: 80,
+                        width: 80,
+                        child: Image.file(
+                          _image,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+//               child: Container(
+//                 width: 80,
+//                 height: 80,
+//                 color: Colors.black,
+//               ),
             ),
             Container(
-              margin: EdgeInsets.only(left: 80, top: 80),
-              color: Colors.redAccent,
-              height: 40,
-              width: 40,
+              margin: EdgeInsets.only(left: 80, top: 100),
+              // color: Colors.redAccent,
+              height: 80,
+              width: 80,
+              child: InkResponse(
+                onTap: () {
+                  getImage();
+                },
+                child: Image.asset("assets/images/ico_camera.png"),
+              ),
             ),
           ],
         ),
@@ -83,10 +138,10 @@ class _SignUpPageState extends State<SignUpPage> {
             height: 1,
           ),
         ),
-        checkAgree(checkAge, "[필수] 만 14세 이상입니다."),
-        checkAgree(checkTermsAndConditions, "[필수] 이용 약관 동의"),
-        checkAgree(checkCollectPersonalInformation, "[필수] 개인정보 수집 및 이용 동의"),
-        checkAgree(checkMarketingUtilization, "[필수] 마케팅 이용 수신 동의"),
+        checkAgree(0, "[필수] 만 14세 이상입니다."),
+        checkAgree(1, "[필수] 이용 약관 동의"),
+        checkAgree(2, "[필수] 개인정보 수집 및 이용 동의"),
+        checkAgree(3, "[필수] 마케팅 이용 수신 동의"),
         registrationButton(),
       ],
     );
@@ -98,7 +153,7 @@ class _SignUpPageState extends State<SignUpPage> {
       height: 64,
       margin: EdgeInsets.only(left: 12, right: 12, top: 44, bottom: 40),
       decoration: BoxDecoration(
-        color: Colors.red,
+        color: Color(0xff2cff3c3c),
         borderRadius: BorderRadius.circular(10),
       ),
       child: InkResponse(
@@ -119,20 +174,29 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  Widget checkAgree(bool checkCondition, String text) {
+  Widget checkAgree(int index, String text) {
     return Container(
-      margin: EdgeInsets.only(left: 12),
+      margin: EdgeInsets.only(
+        left: 24,
+        top: 16,
+      ),
       child: Row(
         children: [
-          Checkbox(
-              value: checkCondition,
-              onChanged: (bool value) {
-                setState(() {
-                  print(value);
-                  checkCondition = value;
-                });
-              }),
-          Text(text),
+          InkResponse(
+            child: checkList[index] == true
+                ? SvgPicture.asset(btnCheckSelect)
+                : SvgPicture.asset(btnCheckUnSelect),
+            onTap: () {
+              setState(() {
+                checkList[index] = !checkList[index];
+                print(checkList[index]);
+              });
+            },
+          ),
+          Container(
+            margin: EdgeInsets.only(left: 8),
+            child: Text(text),
+          ),
           Expanded(child: Container()),
           Container(
               margin: EdgeInsets.only(right: 24),
@@ -151,22 +215,27 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget allAgree() {
     return Container(
       margin: EdgeInsets.only(
-        left: 12,
+        left: 24,
+        bottom: 16,
       ),
       child: Row(
         children: [
-          Checkbox(
-              value: checkTest,
-              onChanged: (bool value) {
-                setState(() {
-                  checkTest = value;
-                  checkAge = value;
-                  checkTermsAndConditions = value;
-                  checkCollectPersonalInformation = value;
-                  checkMarketingUtilization = value;
-                });
-              }),
+          InkResponse(
+            child: checkList[4] == true
+                ? SvgPicture.asset(btnCheckBoxSelect)
+                : SvgPicture.asset(btnCheckBoxUnSelect),
+            onTap: () {
+              setState(() {
+                //이게 뭐지
+                checkList[4] = !checkList[4];
+                for (int i = 0; i < checkList.length - 1; i++) {
+                  checkList[i] = checkList[4];
+                }
+              });
+            },
+          ),
           Container(
+            padding: EdgeInsets.only(left: 8),
             child: Text("모두 동의하기"),
           ),
         ],
